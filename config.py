@@ -1,0 +1,5 @@
+DRONE_ID = "1"
+API_URL = "https://api.meritdrone.site/drone/1/info"
+UPLOAD_URL = "https://api.meritdrone.site/upload/"
+CAMERA_IMAGE_PATH = "image.jpg"
+PIXHAWK_CONNECTION_STRING = "/dev/ttyAMA0"
