@@ -10,7 +10,7 @@ def run_image_pipeline():
     time.sleep(3)
     picam2.capture_file(CAMERA_IMAGE_PATH)
     picam2.close()
-    print("[?] Image captured.")
+    print("Image captured.")
 
     with open(CAMERA_IMAGE_PATH, "rb") as f:
         files = {"file": ("sample.jpg", f, "image/jpeg")}

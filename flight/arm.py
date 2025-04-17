@@ -2,7 +2,7 @@ from pymavlink import mavutil
 import time
 
 def attempt_arm(master):
-    print("[🛠️] Disabling fencing...")
+    print("Disabling fencing...")
     master.mav.param_set_send(
         master.target_system,
         master.target_component,
@@ -10,9 +10,9 @@ def attempt_arm(master):
         float(0),
         mavutil.mavlink.MAV_PARAM_TYPE_INT32
     )
-    time.sleep(1)  # Allow time for parameter to take effect
+    time.sleep(1) 
 
-    print("[⚙️] Sending ARM command...")
+    print("Sending ARM command...")
 
     # Send ARM command
     master.mav.command_long_send(
@@ -28,14 +28,14 @@ def attempt_arm(master):
     while time.time() < ack_timeout:
         msg = master.recv_match(type='COMMAND_ACK', blocking=False)
         if msg and msg.command == mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM:
-            print(f"[✅] COMMAND_ACK received: Result = {msg.result}")
+            print(f" COMMAND_ACK received: Result = {msg.result}")
             if msg.result != 0:
-                print("❌ Arming rejected. Reason:")
+                print("Arming rejected. Reason:")
             break
         time.sleep(0.2)
 
     # Watch for arming status or errors for 10 seconds
-    print("[🧐] Watching status messages...")
+    print(" Watching status messages...")
     start_time = time.time()
     while time.time() - start_time < 10:
         msg = master.recv_match(blocking=False)
@@ -43,12 +43,12 @@ def attempt_arm(master):
             continue
 
         if msg.get_type() == "STATUSTEXT":
-            print(f"[📢] STATUS: {msg.text}")
+            print(f"STATUS: {msg.text}")
 
         elif msg.get_type() == "HEARTBEAT":
             armed = master.motors_armed()
             mode = master.flightmode
-            print(f"[❤️] Mode: {mode} | Armed: {armed}")
+            print(f" Mode: {mode} | Armed: {armed}")
             if armed:
                 print("[✅] Pixhawk is now armed!")	
                 time.sleep(1)
@@ -57,7 +57,7 @@ def attempt_arm(master):
 				master.target_system,
 				master.target_component,
 				mavutil.mavlink.MAV_CMD_COMPONENT_ARM_DISARM,
-				0,    # Confirmation
+				0,    
 				0,    # param1 = 0 to disarm (1 = arm)
 				0, 0, 0, 0, 0, 0)
 
@@ -65,21 +65,21 @@ def attempt_arm(master):
 		
         time.sleep(0.2)
 
-    print("[❌] Failed to arm after retries.")
+    print("Failed to arm after retries.")
     return False
 
 
 if __name__ == "__main__":
     connection = mavutil.mavlink_connection('/dev/ttyAMA0', baud=57600)
     connection.wait_heartbeat()
-    print("✅ Heartbeat received")
+    print("Heartbeat received")
 
-    print("[🧭] Setting mode to STABILIZE...")
+    print("Setting mode to STABILIZE...")
     connection.set_mode_apm("STABILIZE")
     time.sleep(1)
 
     success = attempt_arm(connection)
     if not success:
-        print("❌ Error arming")
+        print("Error arming")
     else:
-        print("✅ Success: Pixhawk is armed")
+        print("Success: Pixhawk is armed")

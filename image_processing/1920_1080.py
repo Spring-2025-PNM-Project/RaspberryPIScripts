@@ -9,8 +9,8 @@ config = picam2.create_still_configuration(main={"size": (1920, 1080)})
 picam2.configure(config)
 picam2.start()
 
-print("[?] Warming up camera...")
-sleep(3)  # Let autofocus/exposure stabilize
+print("Warming up camera...")
+sleep(3)  
 
 # Optional buffer flush
 picam2.capture_metadata()

@@ -16,5 +16,5 @@ def send_status():
         print(res.json())
         return res.json()
     except Exception as e:
-        print("[?] Status error:", e)
+        print("Status error:", e)
         return None
