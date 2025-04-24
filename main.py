@@ -1,23 +1,42 @@
-from network.status_sender import send_status
-from flight.controller import execute_flight_plan
-from image_processing.capture import run_image_pipeline
 import time
+import requests
+import subprocess
 
-def main_loop():
-    response_data = send_status()
+drone_id = "1"
+POLL_INTERVAL = 2  # seconds
+API_ENDPOINT = f"https://api.meritdrone.site/drone/{drone_id}/info"
 
-    if response_data and "flight_plan" in response_data:
-        print("Executing flight plan...")
-        execute_flight_plan(response_data["flight_plan"])
+def poll_for_instructions():
+    try:
+        drone_status = {
+                "location": {
+                    "latitude": 0 / 1e7,
+                    "longitude": 0 / 1e7,
+                    "altitude": 0 / 1000.0
+                },
+                "timestamp": int(time.time()),
+                "status": "grounded",
+            }
+        response = requests.post(API_ENDPOINT, json = drone_status)
+        print(response.text)
+        if response.status_code == 200:
+            instructions = response.json().get("instructions", [])
+            return instructions
+    except Exception as e:
+        print(f"[ERROR] Poll failed: {e}")
+    return []
 
-        print("Running image capture pipeline...")
-        run_image_pipeline()
+def main():
+    print("[MAIN] Starting drone instruction poller...")
+    while True:
+        instructions = poll_for_instructions()
+        if "takeoff" in instructions:
+            print("[MAIN] 'takeoff' instruction received. Launching flight plan...")
+            subprocess.run(["/usr/bin/python3", "flight/gps_enabled/vertical_horizontal_flight_velocity_based.py"])
+            print("[MAIN] Flight plan execution finished.")
+        else:
+            print("[MAIN] No actionable instruction.")
+        time.sleep(POLL_INTERVAL)
 
-        print("Mission complete.")
-        return True 
-    return False
-
-while True:
-    if main_loop():
-        break
-    time.sleep(5)
+if __name__ == "__main__":
+    main()
